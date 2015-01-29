@@ -1,34 +1,64 @@
-clearColor = [0.5,0.5,0.5,1];
 use2D = true;
 
-//the tile system is based off the sample code here: http://jsfiddle.net/Selkcip/m6Cff/
-var tileX = 10;
-var tileY = 10;
-var tileTexture = "http://www.jar42.com/brine/laststop/images/trash.png";
-
-function Tile(texture){
-	this.texture = Textures.load(texture);
+var squareSize = 10;
+var gridSize = 60;
+var grid = new Array(gridSize);
+for (var i = 0; i < grid.length; i++) {
+	grid[i] = new Array(gridSize);
 }
 
-function Grid(cols, rows, tileSize){
-	Sprite.call(this);
-	
-	this.image = Textures.load(tileTexture);
-	
-	this.cols = cols;
-	this.rows = rows;
-	this.tileSize = tileSize;
-	
-	this.tile = new Sprite();
+var snake = new Array(10);
+function newSnake() {
+	var snakeX = 10,
+	    snakeY = 0;
+	for (var i = 0; i < snake.length; i++) {
+		snake[i] = {
+			x : snakeX - i,
+			y : snakeY
+		};
+		grid[snakeX - i][snakeY] = 'snake';
+	}
 
-	this.tiles = [];
-	for(var c = 0; c < cols; c++){
-		this.tiles[c] = [];
-		for(var r = 0; r < rows; r++){
-			this.tiles[c][r] = new Tile(tileTexture);
+}
+
+function newFood() {
+	var randX = Math.floor(Math.random() * gridSize);
+	var randY = Math.floor(Math.random() * gridSize);
+	grid[randX][randY] = 'food';
+}
+
+function drawFood(x, y) {
+	var foodSprite = new Sprite();
+	foodSprite.height = squareSize;
+	foodSprite.width = squareSize;
+	foodSprite.x = x;
+	foodSprite.y = y;
+	foodSprite.image = Textures.load("blackSquare.png");
+	world.addChild(foodSprite);
+}
+
+function drawSnake(x, y) {
+	var snakeSprite = new Sprite();
+	snakeSprite.height = squareSize;
+	snakeSprite.width = squareSize;
+	snakeSprite.x = x;
+	snakeSprite.y = y;
+	snakeSprite.image = Textures.load("blueSquare.png");
+	world.addChild(snakeSprite);
+}
+
+function drawGame() {
+	for (var x = 0; x < grid.length; x++) {
+		for (var y = 0; y < grid.length; y++) {
+			if (grid[x][y] == 'food') {
+				drawFood(x * squareSize, y * squareSize);
+			} else if (grid[x][y] == 'snake') {
+				drawSnake(x * squareSize, y * squareSize);
+			}
 		}
-	}	
+	}
 }
 
-Grid.prototype = new Sprite();
-
+newSnake();
+newFood();
+drawGame();
