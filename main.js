@@ -1,6 +1,7 @@
 use2D = true;
 
 
+
 // -- GRID --
 
 var squareSize = 10; //the size of each square
@@ -13,6 +14,7 @@ for (var i = 0; i < grid.length; i++) {
 
 //draws all the objects in the grid
 function drawGrid() {
+	//May need to clear the canvas.
 	//iterate through the whole grid
 	for (var x = 0; x < grid.length; x++) {
 		for (var y = 0; y < grid.length; y++) {
@@ -25,9 +27,11 @@ function drawGrid() {
 	}
 }
 
+
 // -- SNAKE --
 
 var snakeSize = 10; //the initial size of the snake
+var snakeDir = "right"; //the direction the snake is moving in.
 //the snake is an array of objects with an x and y value.
 var snake = new Array(10);
 function newSnake() {
@@ -55,6 +59,15 @@ function drawSnake(x, y) {
 	world.addChild(snakeSprite);
 }
 
+//updates the snake
+function moveSnake(){
+	//only need to move the last square to the front
+	//start by removing the last value(at the end of the array)
+	snake.pop();
+	//add a new link
+	snake.unshift({x:snake[0].x+1, y:snake[0].y}); // DOESNT WORK FIX PLS
+};
+
 
 // -- FOOD --
 
@@ -79,7 +92,28 @@ function drawFood(x, y) {
 }
 
 
+// -- CONTROLS --
 
+//we'll let WASD or the arrow keys work
+//Left
+// gInput.addBool(65, "left");//a
+// gInput.addBool(37, "left");
+// //Right
+// gInput.addBool(68, "right");//d
+// gInput.addBool(39, "right");
+// //Down
+// gInput.addBool(83, "down");//s
+// gInput.addBool(40, "down");
+// //Up
+// gInput.addBool(87, "up");//w
+// gInput.addBool(38, "up");
+
+
+// -- Start the Game --
 newSnake();
 newFood();
-drawGrid();
+
+world.update = function(d){
+	moveSnake();
+	drawGrid();
+};
