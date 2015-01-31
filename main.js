@@ -3,9 +3,9 @@ use2D = true;
 // -- GRID --
 
 //The grid holds the positions of things in the world
-var squareSize = 10;
+var squareSize = 20;
 //the size of each square
-var gridSize = 60;
+var gridSize = 30;
 //the number of lines in the grid
 //Makes a 2d array for the gride, with gridSize columns and gridSize rows
 var grid = new Array(gridSize);
@@ -128,6 +128,9 @@ function checkCollision(x, y) {
 			grid[x][y] = '';
 			//then find a new food location
 			newFoodLocation();
+			//Add to score and update it
+			score++;
+			scoreText.text = "Score: " + score;
 		}
 	}
 }
@@ -148,18 +151,20 @@ function newFood() {
 	newFoodLocation();
 }
 
-function newFoodLocation(){
+function newFoodLocation() {
 	//randomly picks coordinates
+	do{
 	var randX = Math.floor(Math.random() * gridSize);
 	var randY = Math.floor(Math.random() * gridSize);
+	}while(grid[randX][randY] == 'snake');
 	//set food's coordinates to those
 	food.x = randX;
 	food.y = randY;
 	//put it in the grid
 	grid[randX][randY] = 'food';
 	//change the sprite's coordinates
-	food.foodSprite.x = randX*squareSize;
-	food.foodSprite.y = randY*squareSize;
+	food.foodSprite.x = randX * squareSize;
+	food.foodSprite.y = randY * squareSize;
 }
 
 //draws the food in the world
@@ -205,11 +210,34 @@ function checkDir() {
 	}
 }
 
-// -- Start the Game --
+
+// -- SPREAD --
+
+//spread acts as a wall, running into it with the snake will game over
+//every so often, the spread will spread(duh) spawning a new block adjacent to it
+//it will never spawn into the snake, so by running the snake around it you can cut it off and delay it's spread a little.
+
+// -- World Things --
 newSnake();
 newFood();
+var delay = 4;
+var delayCounter = 0;
+//score things
+var score = 0;
+var scoreText = new TextBox();
+scoreText.x = 5;
+scoreText.y = 5;
+scoreText.fontSize = 16;
+scoreText.text = "Score: " + score;
+world.addChild(scoreText);
 
 world.update = function(d) {
-	checkDir();
-	moveSnake();
+	if (delayCounter >= delay) {
+		delayCounter = 0;
+		checkDir();
+		moveSnake();
+	}
+	else{
+		delayCounter++;
+	}
 };
