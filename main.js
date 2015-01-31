@@ -43,7 +43,7 @@ function drawGrid() {
 
 var snakeSize = 10;
 //the initial size of the snake
-var snakeDir = "right";
+var snakeDir = 'r';
 //the direction the snake is moving in.
 //the snake is an array of objects with an x and y value.
 var snake = new Array(10);
@@ -53,22 +53,19 @@ function newSnake() {
 	for (var i = 0; i < snake.length; i++) {//runs over the length of the snake
 		snake[i] = {//adds each object with an x and y value
 			x : snakeX - i,
-			y : snakeY
+			y : snakeY,
+			snakeSprite: drawSnake(snakeX - i, snakeY)
 		};
 	}
 
 }
 
-//Puts the snake in the grid
-function putSnakeInGrid() {
-	for (var i = 0; i < snake.length; i++) {
-		grid[snake[i].x][snake[i].y] = 'snake';
-	}
-}
 
 //draws one snake block in the world
-//Param: x,y coordinates of the canvas, no offset
+//Param: x,y coordinates of grid, offset is delt with here
 function drawSnake(x, y) {
+	x = x*squareSize;
+	y = y*squareSize;
 	var snakeSprite = new Sprite();
 	snakeSprite.height = squareSize;
 	snakeSprite.width = squareSize;
@@ -76,21 +73,32 @@ function drawSnake(x, y) {
 	snakeSprite.y = y;
 	snakeSprite.image = Textures.load("blueSquare.png");
 	world.addChild(snakeSprite);
+	return snakeSprite;
 }
 
-//updates the snake
+//updates the snake, and just about everything else
 function moveSnake() {
-	//only need to add a new square at the fron and remove the one in the back
-
-	//add a new link
-	var frontX = snake[0].x + 1;
-	var frontY = snake[0].y;
-	snake.unshift({
-		x : frontX,
-		y : frontY
-	});
-	//remove the last element
-	snake.pop();
+	//only need to move the square at the back to the front
+	//moves the last square in the array to the front of the array.
+	snake.unshift(snake.pop());
+	//snake[0] needs to be the current head
+	//snake[1] is the current head
+	snake[0].x = snake[1].x;
+	snake[0].y = snake[1].y;
+	if(snakeDir == 'r'){
+		snake[0].x++;
+	}
+	else if(snakeDir == 'l'){
+		snake[0].x--;
+	}
+	else if(snakeDir == 'u'){
+		snake[0].y--;
+	}
+	else if(snakeDir == 'd'){
+		snake[0].y++;
+	}
+	snake[0].snakeSprite.x = snake[0].x * squareSize;
+	snake[0].snakeSprite.y = snake[0].y * squareSize;
 }
 
 // -- FOOD --
@@ -105,22 +113,18 @@ function newFood() {
 	//adds those coordinates to the food array
 	food.push({
 		x : randX,
-		y : randY
+		y : randY,
+		foodSprite: drawFood(randX, randY)
 	});
 	grid[randX][randY] = 'food';
 	//tells the grid where the food is
 }
 
-//adds the food to the grid
-function putFoodInGrid() {
-	for (var i = 0; i < food.length; i++) {
-		grid[food[i].x][food[i].y] = 'food';
-	}
-}
-
 //draws the food in the world
-//param: x,y coordinates of the canvas, no offset
+//param: x,y coordinates of the grid, offset is taken care of.
 function drawFood(x, y) {
+	x = x*squareSize;
+	y = y*squareSize;
 	var foodSprite = new Sprite();
 	foodSprite.height = squareSize;
 	foodSprite.width = squareSize;
@@ -128,29 +132,42 @@ function drawFood(x, y) {
 	foodSprite.y = y;
 	foodSprite.image = Textures.load("blackSquare.png");
 	world.addChild(foodSprite);
+	return foodSprite;
 }
 
 // -- CONTROLS --
 
-//we'll let WASD or the arrow keys work
+//snake will be controlled with the WASD keys
 //Left
-// gInput.addBool(65, "left");//a
-// gInput.addBool(37, "left");
+gInput.addBool(65, "left");//a
 // //Right
-// gInput.addBool(68, "right");//d
-// gInput.addBool(39, "right");
+gInput.addBool(68, "right");//d
 // //Down
-// gInput.addBool(83, "down");//s
-// gInput.addBool(40, "down");
+gInput.addBool(83, "down");//s
 // //Up
-// gInput.addBool(87, "up");//w
-// gInput.addBool(38, "up");
+gInput.addBool(87, "up");//w
+
+function checkDir(){
+	if(gInput.right && snakeDir != 'l'){
+		snakeDir = 'r';
+	}
+	else if(gInput.left && snakeDir != 'r'){
+		snakeDir = 'l';
+	}
+	else if(gInput.down && snakeDir != 'u'){
+		snakeDir = 'd';
+	}
+	else if(gInput.up && snakeDir != 'd'){
+		snakeDir = 'u';
+	}
+}
+
 
 // -- Start the Game --
 newSnake();
 newFood();
 
 world.update = function(d) {
+	checkDir();
 	moveSnake();
-	drawGrid();
 };
