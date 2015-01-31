@@ -123,30 +123,43 @@ function checkCollision(x, y) {
 				y : y,
 				snakeSprite : drawSnake(x, y)
 			});
-			//then we delete the food and make new food
-			world.removeChild(food.pop().foodSprite);
-			newFood();
+			//then we change the food's location
+			//start by removing it from the grid
+			grid[x][y] = '';
+			//then find a new food location
+			newFoodLocation();
 		}
 	}
 }
 
 // -- FOOD --
 
-var food = new Array();
+var food;
 
 //makes a new food block and puts it the food array
 function newFood() {
+	//start by putting the food somewhere off the map
+	food = {
+		x : -1,
+		y : -1,
+		foodSprite : drawFood(-1, -1)
+	};
+	//puts the food in the world
+	newFoodLocation();
+}
+
+function newFoodLocation(){
 	//randomly picks coordinates
 	var randX = Math.floor(Math.random() * gridSize);
 	var randY = Math.floor(Math.random() * gridSize);
-	//adds those coordinates to the food array
-	food.push({
-		x : randX,
-		y : randY,
-		foodSprite : drawFood(randX, randY)
-	});
+	//set food's coordinates to those
+	food.x = randX;
+	food.y = randY;
+	//put it in the grid
 	grid[randX][randY] = 'food';
-	//tells the grid where the food is
+	//change the sprite's coordinates
+	food.foodSprite.x = randX*squareSize;
+	food.foodSprite.y = randY*squareSize;
 }
 
 //draws the food in the world
