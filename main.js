@@ -14,6 +14,9 @@ var grid = new Array(gridSize);
 function clearGrid() {
 	for (var i = 0; i < grid.length; i++) {
 		grid[i] = new Array(gridSize);
+		for (var j = 0; j < grid[i].length; j++) {
+			grid[i][j] = '';
+		}
 	}
 }
 
@@ -131,6 +134,8 @@ function checkCollision(x, y) {
 			//Add to score and update it
 			score++;
 			scoreText.text = "Score: " + score;
+		} else if(check == 'spread'){
+			alert("GAME OVER");
 		}
 	}
 }
@@ -153,10 +158,10 @@ function newFood() {
 
 function newFoodLocation() {
 	//randomly picks coordinates
-	do{
-	var randX = Math.floor(Math.random() * gridSize);
-	var randY = Math.floor(Math.random() * gridSize);
-	}while(grid[randX][randY] == 'snake');
+	do {
+		var randX = Math.floor(Math.random() * gridSize);
+		var randY = Math.floor(Math.random() * gridSize);
+	} while(grid[randX][randY] != '');
 	//set food's coordinates to those
 	food.x = randX;
 	food.y = randY;
@@ -210,16 +215,100 @@ function checkDir() {
 	}
 }
 
-
 // -- SPREAD --
 
 //spread acts as a wall, running into it with the snake will game over
 //every so often, the spread will spread(duh) spawning a new block adjacent to it
 //it will never spawn into the snake, so by running the snake around it you can cut it off and delay it's spread a little.
 
+var spread = new Array();
+var oldSpread = new Array();
+
+function newSpread() {
+	spread.push({
+		x : gridSize / 2,
+		y : gridSize / 2,
+		spreadSprite : drawSpread(gridSize / 2, gridSize / 2)
+	});
+	grid[gridSize/2][gridSize / 2] = 'spread';
+}
+
+function drawSpread(x, y) {
+	x = x * squareSize;
+	y = y * squareSize;
+	var spreadSprite = new Sprite();
+	spreadSprite.height = squareSize;
+	spreadSprite.width = squareSize;
+	spreadSprite.x = x;
+	spreadSprite.y = y;
+	spreadSprite.image = Textures.load("spread.png");
+	world.addChild(spreadSprite);
+	return spreadSprite;
+}
+
+function spreadMore(count) {
+	if (count > spread.length / 2) {
+		return;
+	}
+	var check = Math.floor(Math.random() * spread.length);
+	if (!checkSpread(check)) {
+		spreadMore(count + 1);
+	}
+}
+
+function checkSpread(check) {
+	var spreadLoc = new Array();
+	var spreadObj = spread[check];
+	var x = spreadObj.x,
+	    y = spreadObj.y;
+	var str;
+	str = grid[x][y + 1];
+	if (str == '') {
+
+		spreadLoc.push({
+			x : x,
+			y : y + 1
+		});
+	}
+	str = grid[x][y - 1];
+	if (str == '') {
+		spreadLoc.push({
+			x : x,
+			y : y - 1
+		});
+	}
+	str = grid[x+1][y];
+	if (str == '') {
+		spreadLoc.push({
+			x : x + 1,
+			y : y
+		});
+	}
+	str = grid[x - 1][y];
+	if (str == '') {
+		spreadLoc.push({
+			x : x - 1,
+			y : y
+		});
+	}
+	if (spreadLoc.length > 0) {
+		var newLoc = Math.floor(Math.random() * spreadLoc.length);
+		spread.push({
+			x : spreadLoc[newLoc].x,
+			y : spreadLoc[newLoc].y,
+			spreadSprite : drawSpread(spreadLoc[newLoc].x, spreadLoc[newLoc].y)
+		});
+		grid[spreadLoc[newLoc].x][spreadLoc[newLoc].y] = 'spread';
+		return true;
+	}
+	oldSpread.push(spread.splice(check, 1));
+	return false;
+}
+
 // -- World Things --
 newSnake();
 newFood();
+newSpread();
 var delay = 4;
 var delayCounter = 0;
 //score things
@@ -236,8 +325,8 @@ world.update = function(d) {
 		delayCounter = 0;
 		checkDir();
 		moveSnake();
-	}
-	else{
+		spreadMore(0);
+	} else {
 		delayCounter++;
 	}
 };
